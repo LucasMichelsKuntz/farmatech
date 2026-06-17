@@ -124,8 +124,8 @@ farmtech-fase4/
 │   └── models.joblib
 │
 ├── config.py                # Caminhos centralizados (ROOT, CSV_PATH, DB_PATH, MODEL_PATH)
+├── main.py                  # Ponto de entrada: setup do banco + inicialização do Streamlit
 ├── requirements.txt         # Dependências Python
-├── run.ps1                  # Script de inicialização (Windows PowerShell)
 └── README.md
 ```
 
@@ -133,6 +133,7 @@ farmtech-fase4/
 
 | Arquivo | Responsabilidade |
 |---|---|
+| `main.py` | Ponto de entrada: ingest condicional + `streamlit run` via subprocess |
 | `config.py` | Única fonte de verdade para todos os caminhos do projeto |
 | `db/connection.py` | Context manager `connection()` para SQLite (garante fechamento seguro) |
 | `db/ingest.py` | Lê o CSV, cria as tabelas e popula o banco |
@@ -182,17 +183,11 @@ pip install -r requirements.txt
 
 ### 4. Iniciar o dashboard
 
-**Windows (script automático):**
-```powershell
-.\run.ps1
-```
-
-**Manual (qualquer OS):**
 ```bash
-streamlit run dashboard/app.py
+python main.py
 ```
 
-O script `run.ps1` verifica se o banco de dados já existe; caso contrário, executa a ingestão do CSV automaticamente. Ao abrir o dashboard em http://localhost:8501, se o banco ainda não existir (ex.: Streamlit Cloud), ele é criado automaticamente na primeira execução.
+O `main.py` verifica se o banco de dados já existe; caso contrário, executa a ingestão do CSV automaticamente antes de subir o Streamlit. Funciona em qualquer sistema operacional.
 
 ### 5. Treinar os modelos
 
