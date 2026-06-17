@@ -39,17 +39,18 @@ def _regression_metrics(y_true, y_pred, model_type: ModelType) -> dict:
     rmse = np.sqrt(mse)
     r2   = r2_score(y_true, y_pred)
     return {
-        "model": model_type.value,
-        "MAE":   round(mae, 2),
-        "MSE":   round(mse, 2),
-        "RMSE":  round(rmse, 2),
-        "R²":    round(r2, 4),
+        "model":                    model_type.value,
+        "Erro Medio Absoluto":      round(mae, 2),
+        "Erro Quadratico Medio":    round(mse, 2),
+        "Raiz do Erro Quadratico":  round(rmse, 2),
+        "Coeficiente de Det. (R²)": round(r2, 4),
     }
 
 
 def train_regression(df: pd.DataFrame, target: str, label: str) -> RegressionResult:
     features = [f for f in FEATURES_REG if f != target]
-    features += ["npk_total", "npk_ratio_nk"]
+    if target != "nitrogenio":
+        features += ["npk_total", "npk_ratio_nk"]
     features  = [f for f in features if f in df.columns]
 
     X = df[features]
@@ -64,9 +65,9 @@ def train_regression(df: pd.DataFrame, target: str, label: str) -> RegressionRes
         m = _regression_metrics(y_test, y_pred, model_type)
         rows.append(m)
         trained[model_type] = pipe
-        print(f"  [{label}][{model_type.value}] R²={m['R²']}  RMSE={m['RMSE']}  MAE={m['MAE']}")
+        print(f"  [{label}][{model_type.value}] R²={m['Coeficiente de Det. (R²)']}  RMSE={m['Raiz do Erro Quadratico']}  MAE={m['Erro Medio Absoluto']}")
 
-    best_row  = max(rows, key=lambda x: x["R²"])
+    best_row  = max(rows, key=lambda x: x["Coeficiente de Det. (R²)"])
     best_type = next(mt for mt in ModelType if mt.value == best_row["model"])
 
     return RegressionResult(

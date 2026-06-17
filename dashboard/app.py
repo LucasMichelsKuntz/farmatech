@@ -1,6 +1,6 @@
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import joblib
 import numpy as np
@@ -12,7 +12,6 @@ import streamlit as st
 from config import CSV_PATH, DB_PATH, MODEL_PATH
 from ml.enums import ModelType, Priority
 from ml.features import load_data, prepare
-from ml.pipeline import run_pipeline
 from ml.recommendations import generate_recommendations
 
 VERDE   = "#2E7D32"
@@ -27,14 +26,12 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-st.markdown(f"""
-<style>
-  .rec-critica {{background:#FFEBEE;border-left:4px solid {VERMELHO};padding:10px;border-radius:4px;margin:6px 0}}
-  .rec-alta    {{background:#FFF3E0;border-left:4px solid {LARANJA};padding:10px;border-radius:4px;margin:6px 0}}
-  .rec-media   {{background:#FFFDE7;border-left:4px solid {AMARELO};padding:10px;border-radius:4px;margin:6px 0}}
-  .rec-ok      {{background:#E8F5E9;border-left:4px solid {VERDE};padding:10px;border-radius:4px;margin:6px 0}}
-</style>
-""", unsafe_allow_html=True)
+_REC_STYLE = {
+    Priority.CRITICAL: (VERMELHO, "#FFEBEE"),
+    Priority.HIGH:     (LARANJA,  "#FFF3E0"),
+    Priority.MEDIUM:   (AMARELO,  "#FFFDE7"),
+    Priority.OK:       (VERDE,    "#E8F5E9"),
+}
 
 
 @st.cache_resource(show_spinner="Preparando banco de dados...")
@@ -54,6 +51,7 @@ def _data():
 
 @st.cache_resource(show_spinner="Treinando modelos de IA...")
 def _train():
+    from ml.pipeline import run_pipeline
     return run_pipeline()
 
 
@@ -187,10 +185,6 @@ elif page == "Modelos de Regressao":
 **Split:** 80% treino / 20% teste (aleatorio)
 """)
 
-    if st.button("Treinar / Re-treinar todos os modelos", type="primary"):
-        st.cache_resource.clear()
-        st.rerun()
-
     res = _train()
 
     tab_irr, tab_fer = st.tabs(["Irrigacao (chuva_mm)", "Fertilizacao (nitrogenio)"])
@@ -199,8 +193,8 @@ elif page == "Modelos de Regressao":
         st.subheader(f"Comparacao de Modelos — {label}")
         st.dataframe(
             reg.metrics.set_index("model").style
-            .highlight_max(subset=["R²"], color="#C8E6C9")
-            .highlight_min(subset=["MAE", "RMSE"], color="#C8E6C9"),
+            .highlight_max(subset=["Coeficiente de Det. (R²)"], color="#C8E6C9")
+            .highlight_min(subset=["Erro Medio Absoluto", "Raiz do Erro Quadratico"], color="#C8E6C9"),
             use_container_width=True,
         )
 
@@ -208,10 +202,10 @@ elif page == "Modelos de Regressao":
             st.markdown("""
 | Metrica | O que mede | Unidade |
 |---------|-----------|---------|
-| **MAE** | Erro medio absoluto | mesma do target |
-| **MSE** | Erro quadratico medio (penaliza erros grandes) | quadrado do target |
-| **RMSE** | Raiz do MSE — interpretavel na escala original | mesma do target |
-| **R²** | Proporcao da variancia explicada (1.0 = perfeito) | adimensional |
+| **Erro Medio Absoluto** | Diferenca media entre previsto e real | mesma do target |
+| **Erro Quadratico Medio** | Penaliza erros grandes mais do que pequenos | quadrado do target |
+| **Raiz do Erro Quadratico** | Erro na escala original do target | mesma do target |
+| **Coeficiente de Det. (R²)** | Proporcao da variancia explicada (1.0 = perfeito) | adimensional |
 """)
 
         st.subheader("Real vs Previsto no Conjunto de Teste")
@@ -233,7 +227,15 @@ elif page == "Modelos de Regressao":
         if model_sel == ModelType.RANDOM_FOREST:
             st.subheader("Importancia das Features (Random Forest)")
             rf  = reg.models[model_sel].named_steps["model"]
-            imp = pd.Series(rf.feature_importances_, index=list(reg.X_test.columns)).sort_values(ascending=False)
+            _feat_labels = {
+                "cultura_cod": "Cultura", "npk_total": "NPK Total",
+                "npk_ratio_nk": "Ratio N/K", "chuva_mm": "Chuva (mm)",
+                "nitrogenio": "Nitrogenio", "fosforo": "Fosforo",
+                "potassio": "Potassio", "temperatura": "Temperatura",
+                "umidade": "Umidade", "ph": "pH",
+            }
+            _cols = [_feat_labels.get(c, c) for c in reg.X_test.columns]
+            imp = pd.Series(rf.feature_importances_, index=_cols).sort_values(ascending=False)
             fig_i = px.bar(x=imp.values, y=imp.index, orientation="h",
                            color=imp.values, color_continuous_scale="Greens",
                            labels={"x": "Importancia", "y": "Feature"})
@@ -317,7 +319,7 @@ elif page == "Previsoes Interativas":
                 "steps": [
                     {"range": [0, 60],    "color": "#FFF9C4"},
                     {"range": [60, 150],  "color": "#B3E5FC"},
-                    {"range": [150, 300], "color": "#0D47A1", "opacity": 0.3},
+                    {"range": [150, 300], "color": "#90CAF9"},
                 ],
             },
         ))
@@ -343,7 +345,7 @@ elif page == "Previsoes Interativas":
                 "steps": [
                     {"range": [0, 40],    "color": "#FFCDD2"},
                     {"range": [40, 100],  "color": "#C8E6C9"},
-                    {"range": [100, 140], "color": "#1B5E20", "opacity": 0.3},
+                    {"range": [100, 140], "color": "#A5D6A7"},
                 ],
             },
         ))
@@ -422,13 +424,6 @@ elif page == "Recomendacoes":
     }
     recs = generate_recommendations(reading, irr_pred, fer_pred)
 
-    css_map = {
-        Priority.CRITICAL: "rec-critica",
-        Priority.HIGH:     "rec-alta",
-        Priority.MEDIUM:   "rec-media",
-        Priority.OK:       "rec-ok",
-    }
-
     with col_out:
         st.subheader("Resultado do Modelo")
         m1, m2 = st.columns(2)
@@ -438,12 +433,13 @@ elif page == "Recomendacoes":
 
         st.subheader("Acoes Recomendadas")
         for rec in recs:
-            imp       = f" | Impacto estimado: **+{rec.impact_pct}%**" if rec.impact_pct else ""
-            css_class = css_map.get(rec.priority, "rec-ok")
+            border, bg = _REC_STYLE.get(rec.priority, (VERDE, "#E8F5E9"))
+            imp = f" | Impacto estimado: **+{rec.impact_pct}%**" if rec.impact_pct else ""
+            code_style = "background:rgba(0,0,0,0.08);padding:1px 4px;border-radius:3px;font-family:monospace;color:#212121"
             st.markdown(f"""
-<div class="{css_class}">
+<div style="background-color:{bg};border-left:4px solid {border};padding:10px;border-radius:4px;margin:6px 0;color:#212121">
   <strong>[{rec.priority.value}] {rec.parameter}</strong><br>
-  Atual: <code>{rec.current_value}</code> | Faixa otima: <code>{rec.optimal_range}</code><br>
+  Atual: <span style="{code_style}">{rec.current_value}</span> | Faixa otima: <span style="{code_style}">{rec.optimal_range}</span><br>
   {rec.action}{imp}
 </div>
 """, unsafe_allow_html=True)
