@@ -68,7 +68,6 @@ with st.sidebar:
     page = st.radio("Navegacao", [
         "Visao Geral",
         "Analise Exploratoria",
-        "Modelos de Regressao",
         "Previsoes Interativas",
         "Recomendacoes",
         "Recomendacao de Cultura",
@@ -175,88 +174,15 @@ elif page == "Analise Exploratoria":
                             opacity=0.6, labels={x_ax: x_ax, y_ax: y_ax, "cultura": "Cultura"})
         st.plotly_chart(fig_sc, use_container_width=True)
 
-elif page == "Modelos de Regressao":
-    st.title("Modelos de Regressao Supervisionada")
-    st.info("""
-**Duas tarefas de regressao foram treinadas:**
-- **Regressao 1:** Prever `chuva_mm` (necessidade de irrigacao)
-- **Regressao 2:** Prever `nitrogenio` (necessidade de fertilizacao N)
-
-**Split:** 80% treino / 20% teste (aleatorio)
-""")
-
-    res = _train()
-
-    tab_irr, tab_fer = st.tabs(["Irrigacao (chuva_mm)", "Fertilizacao (nitrogenio)"])
-
-    def _show_results(reg, label):
-        st.subheader(f"Comparacao de Modelos — {label}")
-        st.dataframe(
-            reg.metrics.set_index("model").style
-            .highlight_max(subset=["Coeficiente de Det. (R²)"], color="#C8E6C9")
-            .highlight_min(subset=["Erro Medio Absoluto", "Raiz do Erro Quadratico"], color="#C8E6C9"),
-            use_container_width=True,
-        )
-
-        with st.expander("Interpretacao das metricas"):
-            st.markdown("""
-| Metrica | O que mede | Unidade |
-|---------|-----------|---------|
-| **Erro Medio Absoluto** | Diferenca media entre previsto e real | mesma do target |
-| **Erro Quadratico Medio** | Penaliza erros grandes mais do que pequenos | quadrado do target |
-| **Raiz do Erro Quadratico** | Erro na escala original do target | mesma do target |
-| **Coeficiente de Det. (R²)** | Proporcao da variancia explicada (1.0 = perfeito) | adimensional |
-""")
-
-        st.subheader("Real vs Previsto no Conjunto de Teste")
-        model_sel = st.selectbox(
-            "Modelo:", list(reg.models.keys()),
-            format_func=lambda mt: mt.value,
-            key=label,
-        )
-        y_pred = reg.models[model_sel].predict(reg.X_test)
-        fig = px.scatter(x=reg.y_test.values, y=y_pred, opacity=0.5,
-                         labels={"x": "Real", "y": "Previsto"},
-                         color_discrete_sequence=[AZUL])
-        lim = [float(reg.y_test.min()), float(reg.y_test.max())]
-        fig.add_trace(go.Scatter(x=lim, y=lim, mode="lines",
-                                  line=dict(color=VERMELHO, dash="dash"), name="Ideal"))
-        fig.update_layout(title=f"{model_sel.value} — Real vs Previsto")
-        st.plotly_chart(fig, use_container_width=True)
-
-        if model_sel == ModelType.RANDOM_FOREST:
-            st.subheader("Importancia das Features (Random Forest)")
-            rf  = reg.models[model_sel].named_steps["model"]
-            _feat_labels = {
-                "cultura_cod": "Cultura", "npk_total": "NPK Total",
-                "npk_ratio_nk": "Ratio N/K", "chuva_mm": "Chuva (mm)",
-                "nitrogenio": "Nitrogenio", "fosforo": "Fosforo",
-                "potassio": "Potassio", "temperatura": "Temperatura",
-                "umidade": "Umidade", "ph": "pH",
-            }
-            _cols = [_feat_labels.get(c, c) for c in reg.X_test.columns]
-            imp = pd.Series(rf.feature_importances_, index=_cols).sort_values(ascending=False)
-            fig_i = px.bar(x=imp.values, y=imp.index, orientation="h",
-                           color=imp.values, color_continuous_scale="Greens",
-                           labels={"x": "Importancia", "y": "Feature"})
-            fig_i.update_layout(showlegend=False)
-            st.plotly_chart(fig_i, use_container_width=True)
-
-    with tab_irr:
-        _show_results(res.irr, "Irrigacao")
-    with tab_fer:
-        _show_results(res.fer, "Fertilizacao")
-
 elif page == "Previsoes Interativas":
     st.title("Previsoes Interativas")
     st.info("Ajuste os parametros do campo e veja as previsoes do modelo em tempo real.")
 
+    res   = _train()
     saved = _load_models()
     if saved is None:
-        st.warning("Modelos nao encontrados. Acesse 'Modelos de Regressao' e treine primeiro.")
+        st.warning("Modelos nao encontrados. Recarregue a pagina para treinar.")
         st.stop()
-
-    res = _train()
 
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -377,12 +303,11 @@ elif page == "Previsoes Interativas":
 elif page == "Recomendacoes":
     st.title("Plano de Recomendacoes de Manejo")
 
+    res   = _train()
     saved = _load_models()
     if saved is None:
-        st.warning("Modelos nao encontrados. Treine primeiro em 'Modelos de Regressao'.")
+        st.warning("Modelos nao encontrados. Recarregue a pagina para treinar.")
         st.stop()
-
-    res = _train()
 
     col_in, col_out = st.columns([1, 1])
 
@@ -451,12 +376,11 @@ elif page == "Recomendacao de Cultura":
 para recomendar qual cultura plantar com base nas condicoes atuais do solo e clima.
 """)
 
+    res   = _train()
     saved = _load_models()
     if saved is None:
         st.warning("Modelos nao encontrados. Treine primeiro.")
         st.stop()
-
-    res = _train()
     st.metric("Accuracy do Classificador", f"{res.acc_clf:.2%}")
 
     st.divider()
