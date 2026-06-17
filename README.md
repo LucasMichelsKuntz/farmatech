@@ -203,16 +203,34 @@ Não é necessário nenhum pré-requisito local — o banco e os modelos são ge
 
 ## 📊 Entregáveis
 
-- [x] **Dataset real** integrado ao pipeline — Kaggle *Crop Recommendation Dataset* (2.200 amostras, 22 culturas, 7 features de sensores)
-- [x] **Banco de dados relacional** — SQLite com tabelas `culturas` e `leituras_sensor`, populado automaticamente a partir do CSV
-- [x] **Feature engineering** — `npk_total` e `npk_ratio_nk` calculados e integrados ao pipeline de ML
-- [x] **Regressão supervisionada — Irrigação** — Linear, Ridge e Random Forest treinados e comparados por MAE/RMSE/R²; melhor modelo salvo
-- [x] **Regressão supervisionada — Fertilização** — idem para previsão de necessidade de nitrogênio
-- [x] **Classificação supervisionada** — Random Forest Classifier com 22 classes (culturas), retorna Top 5 com probabilidade
-- [x] **Dashboard interativo** — 6 telas em Streamlit com Plotly: EDA, comparação de modelos, previsões em tempo real, plano de recomendações, recomendação de cultura
-- [x] **Persistência de modelos** — `joblib` com chaves `irrigation`, `fertilization`, `classification`
-- [x] **Código profissional** — ENUMs (`ModelType`, `Priority`), dataclasses (`RegressionResult`, `PipelineResult`, `Recommendation`), sem comentários redundantes, sem strings hardcoded para despacho de modelo
-- [x] **Deploy** — Streamlit Cloud (auto-ingest na primeira execução)
+### Parte 1 — Integração ML + Dashboard Streamlit (3 + 2 pts)
+
+- [x] Pipeline completo de Machine Learning com Scikit-Learn integrado ao dashboard Streamlit
+- [x] Dashboard interativo com métricas de desempenho (MAE, MSE, RMSE, R²), gráficos de correlação e previsões em tempo real
+- [x] Modelos de regressão treinados (Linear, Ridge, Random Forest) com comparação de desempenho e seleção automática do melhor modelo
+- [x] Tela "Previsões Interativas" com sliders para simular condições do campo e visualizar previsões instantâneas
+
+### Parte 2 — Algoritmos Preditivos para Ações de Manejo (3 pts)
+
+- [x] Regressão para **irrigação** — previsão de `chuva_mm` necessária com base nas condições do solo/clima
+- [x] Regressão para **fertilização** — previsão de necessidade de nitrogênio (`nitrogenio` mg/kg)
+- [x] Avaliação com MAE, MSE, RMSE e R² para todos os modelos, com visualização Real vs Previsto
+- [x] Tela "Recomendações" — plano de manejo priorizado (CRITICA / ALTA / MEDIA / OK) gerado a partir das previsões dos modelos
+- [x] Feature engineering: `npk_total` e `npk_ratio_nk` para enriquecer o modelo
+
+### IR ALÉM 1 — Integração IoT + Banco de Dados (bônus)
+
+- [x] Banco de dados relacional SQLite com schema `culturas` + `leituras_sensor` (FK)
+- [x] Ingestão automática do dataset CSV (2.200 amostras, 22 culturas) via `db/ingest.py`
+- [x] Auto-setup: `main.py` detecta ausência do banco e executa a ingestão antes de subir o dashboard
+
+### IR ALÉM 2 — Dashboard Analítico Interativo Online (bônus)
+
+- [x] 6 telas interativas com Plotly: Visão Geral, EDA, Modelos de Regressão, Previsões Interativas, Recomendações, Recomendação de Cultura
+- [x] Gráficos de correlação (matriz de Pearson com máscara diagonal), boxplots por cultura, dispersão interativa
+- [x] Tendências de sensibilidade (ex.: impacto do pH na necessidade de N)
+- [x] Classificação supervisionada — Random Forest Classifier recomenda Top 5 culturas com probabilidade de confiança
+- [x] Deploy online no Streamlit Cloud (auto-ingest + auto-treino na primeira execução)
 
 ---
 
