@@ -68,6 +68,7 @@ with st.sidebar:
     page = st.radio("Navegacao", [
         "Visao Geral",
         "Analise Exploratoria",
+        "Modelos de Regressao",
         "Previsoes Interativas",
         "Recomendacoes",
         "Recomendacao de Cultura",
@@ -173,6 +174,74 @@ elif page == "Analise Exploratoria":
         fig_sc = px.scatter(df_sc, x=x_ax, y=y_ax, color="cultura",
                             opacity=0.6, labels={x_ax: x_ax, y_ax: y_ax, "cultura": "Cultura"})
         st.plotly_chart(fig_sc, use_container_width=True)
+
+elif page == "Modelos de Regressao":
+    st.title("Modelos de Regressao")
+    st.info(
+        "Comparacao de tres algoritmos por target. "
+        "O melhor por Coeficiente de Determinacao e salvo automaticamente."
+    )
+
+    res   = _train()
+    saved = _load_models()
+    if saved is None:
+        st.warning("Modelos nao encontrados. Recarregue a pagina para treinar.")
+        st.stop()
+
+    def _show_results(label, result, saved_key):
+        st.subheader(f"Comparacao de Modelos — {label}")
+        st.dataframe(result.metrics, use_container_width=True, hide_index=True)
+
+        best_row = result.metrics.loc[
+            result.metrics["Coeficiente de Det. (R²)"].idxmax()
+        ]
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Melhor modelo",              best_row["model"])
+        c2.metric("Erro Medio Absoluto",        best_row["Erro Medio Absoluto"])
+        c3.metric("Raiz do Erro Quadratico",    best_row["Raiz do Erro Quadratico"])
+        c4.metric("Coeficiente de Determinacao", best_row["Coeficiente de Det. (R²)"])
+
+        st.divider()
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.subheader("Real vs Previsto")
+            y_pred = saved[saved_key]["model"].predict(result.X_test)
+            fig = px.scatter(
+                x=result.y_test, y=y_pred,
+                labels={"x": "Valor Real", "y": "Valor Previsto"},
+                opacity=0.6, color_discrete_sequence=[AZUL],
+            )
+            lim = [
+                min(result.y_test.min(), y_pred.min()),
+                max(result.y_test.max(), y_pred.max()),
+            ]
+            fig.add_shape(
+                type="line", x0=lim[0], y0=lim[0], x1=lim[1], y1=lim[1],
+                line=dict(color=VERMELHO, dash="dash"),
+            )
+            fig.update_layout(height=350)
+            st.plotly_chart(fig, use_container_width=True)
+
+        with col2:
+            mdl = saved[saved_key]["model"].named_steps["model"]
+            if hasattr(mdl, "feature_importances_"):
+                st.subheader("Importancia das Features (Random Forest)")
+                feats  = saved[saved_key]["features"]
+                imp_df = pd.DataFrame({"Feature": feats, "Importancia": mdl.feature_importances_})
+                imp_df = imp_df.sort_values("Importancia", ascending=True)
+                fig2 = px.bar(
+                    imp_df, x="Importancia", y="Feature", orientation="h",
+                    color="Importancia", color_continuous_scale="Greens",
+                )
+                fig2.update_layout(height=350, showlegend=False)
+                st.plotly_chart(fig2, use_container_width=True)
+
+    tab_irr, tab_fer = st.tabs(["Irrigacao (chuva_mm)", "Fertilizacao (nitrogenio)"])
+    with tab_irr:
+        _show_results("Irrigacao", res.irr, "irrigation")
+    with tab_fer:
+        _show_results("Fertilizacao", res.fer, "fertilization")
 
 elif page == "Previsoes Interativas":
     st.title("Previsoes Interativas")

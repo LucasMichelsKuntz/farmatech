@@ -74,12 +74,13 @@ O modelo com maior **Coeficiente de Determinação (R²)** é selecionado automa
 Um **Random Forest Classifier** (200 estimadores, max_depth=12) foi treinado para classificar entre 22 culturas. O modelo retorna as **Top 5 culturas recomendadas** com probabilidade de confiança.
 
 **5. Dashboard Interativo (Streamlit)**
-A interface web conta com 5 telas:
+A interface web conta com 6 telas:
 
 | Tela | Conteúdo |
 |---|---|
 | Visão Geral | Métricas do dataset, distribuição por cultura, estatísticas descritivas |
 | Análise Exploratória | Histogramas, matriz de correlação, boxplots, dispersão interativa |
+| Modelos de Regressão | Comparação dos três algoritmos por target; métricas MAE, MSE, RMSE e R²; gráfico Real vs Previsto; importância de features |
 | Previsões Interativas | Sliders para simular condições do campo; gauges de irrigação e N; análise de sensibilidade ao pH |
 | Recomendações | Plano de manejo priorizado (CRITICA / ALTA / MEDIA / OK) para N, P, K, irrigação, pH, umidade e temperatura |
 | Recomendação de Cultura | Top 5 culturas recomendadas com barra de confiança e importância de features |
@@ -150,7 +151,7 @@ farmtech-fase4/
 │   └── logo-fiap.png
 │
 ├── dashboard/
-│   └── app.py               # Aplicação Streamlit (5 telas)
+│   └── app.py               # Aplicação Streamlit (6 telas)
 │
 ├── data/
 │   └── crop_dataset.csv     # Dataset Kaggle (2200 amostras, 22 culturas)
@@ -193,7 +194,7 @@ farmtech-fase4/
 | `ml/training.py` | `RegressionResult` dataclass, `_build_pipeline()`, `train_regression()`, `train_classification()` |
 | `ml/pipeline.py` | `PipelineResult` dataclass, `run_pipeline()` — orquestra tudo e salva o joblib |
 | `ml/recommendations.py` | Compara leituras do campo com faixas ótimas agronômicas e previsões do modelo; gera plano de manejo priorizado |
-| `dashboard/app.py` | Interface Streamlit com 5 páginas, cache de dados e modelos |
+| `dashboard/app.py` | Interface Streamlit com 6 páginas, cache de dados e modelos |
 
 ---
 
@@ -260,7 +261,7 @@ Não é necessário nenhum pré-requisito local — o banco e os modelos são ge
 - [x] **Regressão supervisionada — Irrigação** — Linear, Ridge e Random Forest treinados e comparados; Random Forest R² = 0.81; melhor modelo salvo automaticamente
 - [x] **Regressão supervisionada — Fertilização** — idem; Random Forest R² = 0.87
 - [x] **Classificação supervisionada** — Random Forest Classifier 99.3% de acurácia; 22 classes; retorna Top 5 com probabilidade
-- [x] **Dashboard interativo** — 5 telas em Streamlit com Plotly: EDA, previsões em tempo real, plano de recomendações completo (N, P, K, irrigação, pH, umidade, temperatura), recomendação de cultura
+- [x] **Dashboard interativo** — 6 telas em Streamlit com Plotly: comparação de modelos (MAE/MSE/RMSE/R²), EDA, previsões em tempo real, plano de recomendações completo (N, P, K, irrigação, pH, umidade, temperatura), recomendação de cultura
 - [x] **Persistência de modelos** — `joblib` com chaves `irrigation`, `fertilization`, `classification`
 - [x] **Validação agronômica** — importâncias de features e perfis por cultura conferem com literatura agronômica (leguminosas com N baixo, arroz com alta demanda hídrica, frutíferas com alto P/K)
 
