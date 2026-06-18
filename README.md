@@ -257,8 +257,6 @@ Não é necessário nenhum pré-requisito local — o banco e os modelos são ge
 - [x] **Dashboard interativo** — 5 telas em Streamlit com Plotly: EDA, previsões em tempo real, plano de recomendações completo (N, P, K, irrigação, pH, umidade, temperatura), recomendação de cultura
 - [x] **Persistência de modelos** — `joblib` com chaves `irrigation`, `fertilization`, `classification`
 - [x] **Validação agronômica** — importâncias de features e perfis por cultura conferem com literatura agronômica (leguminosas com N baixo, arroz com alta demanda hídrica, frutíferas com alto P/K)
-- [x] **Código profissional** — ENUMs (`ModelType`, `Priority`), dataclasses (`RegressionResult`, `PipelineResult`, `Recommendation`), sem strings hardcoded para despacho de modelo
-- [x] **Deploy** — Streamlit Cloud (auto-ingest na primeira execução)
 
 ---
 
