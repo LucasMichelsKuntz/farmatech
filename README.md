@@ -22,6 +22,12 @@
 
 ---
 
+## Video
+
+[Assistir apresentação no Google Drive](https://drive.google.com/file/d/1YdioHfH0nju1Ygr8TNKsqscgm_wCHxAF/view?usp=sharing)
+
+---
+
 ## Descrição
 
 A **FarmTech Solutions** é uma empresa de tecnologia agrícola que desenvolve soluções inteligentes para o agronegócio. Nesta Fase 4, o desafio proposto pela FIAP consiste em evoluir o sistema de monitoramento de sensores IoT desenvolvido nas fases anteriores, incorporando **Machine Learning supervisionado** para tomada de decisão autônoma no campo.
