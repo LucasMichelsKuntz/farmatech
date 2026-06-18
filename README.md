@@ -81,8 +81,8 @@ A interface web conta com 6 telas:
 | Visão Geral | Métricas do dataset, distribuição por cultura, estatísticas descritivas |
 | Análise Exploratória | Histogramas, matriz de correlação, boxplots, dispersão interativa |
 | Modelos de Regressão | Comparação dos três algoritmos por target; métricas MAE, MSE, RMSE e R²; gráfico Real vs Previsto; importância de features |
-| Previsões Interativas | Sliders para simular condições do campo; gauges de irrigação e N; análise de sensibilidade ao pH |
-| Recomendações | Plano de manejo priorizado (CRITICA / ALTA / MEDIA / OK) para N, P, K, irrigação, pH, umidade e temperatura |
+| Previsões Interativas | Sliders para simular condições do campo; gauges de irrigação e nitrogênio; análise de sensibilidade ao pH |
+| Recomendações | Plano de manejo priorizado (CRITICA / ALTA / MEDIA / OK): irrigação e nitrogênio via previsões dos modelos ML; pH, P, K, umidade e temperatura via comparação com faixas agronômicas ótimas |
 | Recomendação de Cultura | Top 5 culturas recomendadas com barra de confiança e importância de features |
 
 ---
@@ -261,7 +261,7 @@ Não é necessário nenhum pré-requisito local — o banco e os modelos são ge
 - [x] **Regressão supervisionada — Irrigação** — Linear, Ridge e Random Forest treinados e comparados; Random Forest R² = 0.81; melhor modelo salvo automaticamente
 - [x] **Regressão supervisionada — Fertilização** — idem; Random Forest R² = 0.87
 - [x] **Classificação supervisionada** — Random Forest Classifier 99.3% de acurácia; 22 classes; retorna Top 5 com probabilidade
-- [x] **Dashboard interativo** — 6 telas em Streamlit com Plotly: comparação de modelos (MAE/MSE/RMSE/R²), EDA, previsões em tempo real, plano de recomendações completo (N, P, K, irrigação, pH, umidade, temperatura), recomendação de cultura
+- [x] **Dashboard interativo** — 6 telas em Streamlit com Plotly: comparação de modelos (MAE/MSE/RMSE/R²), EDA, previsões interativas de irrigação e nitrogênio via ML, plano de recomendações (irrigação e nitrogênio via modelo; pH/P/K/umidade/temperatura via regras agronômicas), recomendação de cultura
 - [x] **Persistência de modelos** — `joblib` com chaves `irrigation`, `fertilization`, `classification`
 - [x] **Validação agronômica** — importâncias de features e perfis por cultura conferem com literatura agronômica (leguminosas com N baixo, arroz com alta demanda hídrica, frutíferas com alto P/K)
 
