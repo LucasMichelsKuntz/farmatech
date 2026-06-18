@@ -11,14 +11,14 @@
 ## Grupo FarmTech Solutions
 
 ## 👨‍🎓 Integrantes:
-- <a href="https://www.linkedin.com/in/">Lucas Michels Kuntz</a>
+- <a href="https://www.linkedin.com/in/">Lucas Michels Kuntz</a> — RM 570050
 
 
 ## 👩‍🏫 Professores:
 ### Tutor(a)
-- <a href="https://www.linkedin.com/in/">Nome do Tutor</a>
+- <a href="https://www.linkedin.com/in/">Sabrina Otoni</a>
 ### Coordenador(a)
-- <a href="https://www.linkedin.com/in/">Nome do Coordenador</a>
+- <a href="https://www.linkedin.com/in/">André Godoi</a>
 
 ---
 
@@ -169,8 +169,8 @@ farmtech-fase4/
 │   └── models.joblib
 │
 ├── config.py                # Caminhos centralizados (ROOT, CSV_PATH, DB_PATH, MODEL_PATH)
+├── main.py                  # Entrypoint: ingestão automática + inicialização do Streamlit
 ├── requirements.txt         # Dependências Python
-├── run.ps1                  # Script de inicialização (Windows PowerShell)
 └── README.md
 ```
 
@@ -178,6 +178,7 @@ farmtech-fase4/
 
 | Arquivo | Responsabilidade |
 |---|---|
+| `main.py` | Entrypoint: verifica banco, executa ingestão e sobe o Streamlit |
 | `config.py` | Única fonte de verdade para todos os caminhos do projeto |
 | `db/connection.py` | Context manager `connection()` para SQLite (garante fechamento seguro) |
 | `db/ingest.py` | Lê o CSV, cria as tabelas e popula o banco |
@@ -227,21 +228,15 @@ pip install -r requirements.txt
 
 ### 4. Iniciar o dashboard
 
-**Windows (script automático):**
-```powershell
-.\run.ps1
-```
-
-**Manual (qualquer OS):**
 ```bash
-streamlit run dashboard/app.py
+python main.py
 ```
 
-O banco de dados SQLite é criado automaticamente na primeira execução a partir do CSV.
+O script verifica se o banco já existe, executa a ingestão do CSV caso necessário e sobe o Streamlit automaticamente. Equivalente a executar `streamlit run dashboard/app.py` após popular o banco manualmente.
 
-### 5. Treinar os modelos
+### 5. Treinamento dos modelos
 
-Na primeira vez que qualquer tela de previsão for acessada, o pipeline de ML é executado automaticamente (ingestão → feature engineering → treino dos 3 modelos por target → seleção do melhor → persistência em `models/models.joblib`). As demais telas reutilizam os modelos salvos.
+O pipeline de ML (ingestão → feature engineering → treino dos 3 modelos por target → seleção do melhor → persistência em `models/models.joblib`) é executado automaticamente na primeira vez que qualquer tela de previsão for acessada. Nas execuções seguintes os modelos são lidos do disco.
 
 ### Acesso online (Streamlit Cloud)
 
